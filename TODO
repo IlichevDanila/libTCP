@@ -1,0 +1,3 @@
+1) Add timeout for select
+2) Add read and except for select
+3) Make normal exceptions
