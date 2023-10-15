@@ -34,7 +34,7 @@ private:
     static SocketsCount socketsCount;
 
 public:
-    Connection();
+    Connection(int sock = -1);
     Connection(const Connection &rhs);
     Connection(Connection &&rhs);
     ~Connection();

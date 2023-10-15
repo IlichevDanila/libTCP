@@ -12,8 +12,12 @@ namespace dilichev
 namespace tcp
 {
 
-Connection::Connection() : socket(-1)
+Connection::Connection(int sock) : socket(sock)
 {
+    if(sock != -1)
+    {
+        socketsCount[socket] += 1;
+    }
 }
 
 Connection::Connection(const Connection &rhs) : socket(rhs.socket)
