@@ -17,9 +17,8 @@ namespace tcp
 using Data = std::vector<std::uint8_t>;
 
 //Classes' declarations
-class Connection;
-class ConnectionPool;
-class Server;
+class Socket;
+class SocketsPool;
 class Selector;
 
 
