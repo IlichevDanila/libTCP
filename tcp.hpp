@@ -14,6 +14,8 @@ namespace dilichev
 namespace tcp
 {
 
+using Data = std::vector<std::uint8_t>;
+
 //Classes' declarations
 class Connection;
 class ConnectionPool;
@@ -21,49 +23,55 @@ class Server;
 class Selector;
 
 
-//Incapsulates socket connections. Substitute for socket
-class Connection
+class Socket
 {
 public:
-    using Data = std::vector<std::uint8_t>;
+    enum State {CLOSED, LISTEN, CONNECTED};
 
 private:
     using SocketsCount = std::unordered_map<int, std::size_t>;
 
     int socket;
+    State state;
+
     static SocketsCount socketsCount;
 
 public:
-    Connection(int sock = -1);
-    Connection(const Connection &rhs);
-    Connection(Connection &&rhs);
-    ~Connection();
+    Socket(int sock = -1);
+    Socket(const Socket &rhs);
+    Socket(Socket &&rhs);
+    ~Socket();
 
-    ssize_t send(const void *data, std::size_t size);
+    void listen(unsigned short port);
+    void connect(const std::string ip, unsigned short port);
+
+    Socket accept();
+
+    ssize_t recv(void *buffer, std::size_t size);
     Data recv(std::size_t size);
-
-    void connect(const std::string &ip, unsigned short port);
+    ssize_t send(const void *buffer, std::size_t size);
+    ssize_t send(const Data &buffer);
 
     void close();
 };
 
 
 //Class for connection set. Substitute for fd_set
-class ConnectionPool
+class SocketsPool
 {
 public:
-    using Pool = std::list<Connection>;
+    using Pool = std::list<Socket>;
 
 private:
     Pool pool;
 
 public:
-    ConnectionPool();
-    ConnectionPool(const ConnectionPool &rhs);
-    ConnectionPool(ConnectionPool &&rhs);
-    ~ConnectionPool();
+    SocketsPool();
+    SocketsPool(const SocketsPool &rhs);
+    SocketsPool(SocketsPool &&rhs);
+    ~SocketsPool();
 
-    void add(Connection conn);
+    void add(Socket conn);
     
     Pool::iterator begin();
     Pool::iterator end();
@@ -73,8 +81,8 @@ public:
 class Selector
 {
 private:
-    ConnectionPool awaitsRead;//, awaitsWrite, awaitsExcept;
-    ConnectionPool readyRead;//, readyWrite, readyExcept;
+    SocketsPool awaitsRead;//, awaitsWrite, awaitsExcept;
+    SocketsPool readyRead;//, readyWrite, readyExcept;
 
 public:
     Selector();
@@ -88,27 +96,9 @@ public:
 
     void select();
 
-    ConnectionPool getReadyToRead();
+    SocketsPool getReadyToRead();
     //ConnectionPool getReadyToWrite();
     //ConnectionPool getReadyToExcept();
-};
-
-//Class for server socket, obviously
-class Server
-{
-private:
-    unsigned short port;
-    int socket;
-
-public:
-    Server(unsigned short port);
-    Server(const Server &rhs) = delete;
-    Server(Server &&rhs) = delete;
-    ~Server();
-
-    void run();
-    
-    Connection accept();
 };
 
 }
